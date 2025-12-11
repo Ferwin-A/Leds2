@@ -3,80 +3,124 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel IoT con Gráficas</title>
+  <title>Neon IoT Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1e1e2f, #2e325a);
-      color: #fff;
       margin: 0;
       padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top, #08001a, #0d0025, #000);
+      color: #e0e0ff;
     }
+
     header {
-      padding: 20px;
       text-align: center;
-      background: #141423;
-      font-size: 24px;
+      padding: 25px;
+      font-size: 30px;
+      font-weight: bold;
+      color: #7b5bff;
+      text-shadow: 0 0 10px #7b5bff;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1100px;
+      margin: auto;
+      padding-bottom: 50px;
+    }
+
+    .panel {
+      background: rgba(20, 0, 40, 0.7);
+      border: 1px solid rgba(140, 90, 255, 0.4);
+      border-radius: 18px;
+      padding: 25px;
+      margin-bottom: 25px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(140, 90, 255, 0.2);
+    }
+
+    h2 {
+      color: #b286ff;
+      margin-bottom: 12px;
+      text-shadow: 0 0 8px #b286ff;
+    }
+
+    button {
+      width: 48%;
+      padding: 12px;
+      font-size: 17px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: 0.2s;
       font-weight: bold;
     }
-    .container {
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 20px;
-      background: #1d1f33;
-      border-radius: 15px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.4);
+
+    .on {
+      background: #4dffb8;
+      color: #000;
+      box-shadow: 0 0 10px #4dffb8;
     }
-    .card {
-      background: #262941;
-      padding: 20px;
+
+    .on:hover { box-shadow: 0 0 20px #4dffb8; }
+
+    .off {
+      background: #ff4d6d;
+      color: white;
+      box-shadow: 0 0 10px #ff4d6d;
+    }
+
+    .off:hover { box-shadow: 0 0 20px #ff4d6d; }
+
+    .input-box {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(140, 90, 255, 0.4);
+      border-radius: 10px;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      background: rgba(255,255,255,0.05);
       border-radius: 12px;
-      margin-bottom: 20px;
+      padding: 15px;
     }
-    button {
-      padding: 10px 20px;
-      border: none;
-      margin-top: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .on { background: #00c853; color: #000; }
-    .off { background: #d50000; color: #fff; }
-    .chart-container { width: 100%; height: 300px; }
   </style>
 </head>
 <body>
-  <header>Panel IoT con Gráficas en Tiempo Real</header>
+  <header>Neon IoT Dashboard</header>
 
   <div class="container">
-    <div class="card">
-      <h2>Control de LEDs</h2>
+
+    <div class="panel">
+      <h2>Control de Dispositivos</h2>
+
       <p>Foco Sala</p>
       <button id="btnSalaOn" class="on">Encender Sala</button>
       <button id="btnSalaOff" class="off">Apagar Sala</button>
 
-      <p>Foco Laboratorio</p>
+      <p style="margin-top:20px;">Foco Laboratorio</p>
       <button id="btnLabOn" class="on">Encender Laboratorio</button>
       <button id="btnLabOff" class="off">Apagar Laboratorio</button>
     </div>
 
-    <div class="card">
-      <h2>Gráfico de Cambios de Estado</h2>
-      <div class="chart-container">
-        <canvas id="estadoChart"></canvas>
-      </div>
+    <div class="panel">
+      <h2>Gráfica Estado Sala / Laboratorio</h2>
+      <canvas id="estadoChart" height="140"></canvas>
     </div>
 
-    <div class="card">
-      <h2>Configuración Firebase</h2>
-      <input id="apiKey" placeholder="API KEY" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px;">
-      <input id="dbUrl" placeholder="Realtime Database URL" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px;">
-      <button id="saveCfg" class="on">Guardar Configuración</button>
+    <div class="panel">
+      <h2>Conexión Firebase</h2>
+      <input id="apiKey" class="input-box" placeholder="API KEY aquí...">
+      <input id="dbUrl" class="input-box" placeholder="URL Realtime Database...">
+      <button id="saveCfg" class="on">Guardar configuración</button>
     </div>
+
   </div>
 
 <script type="module">
@@ -88,11 +132,11 @@
       databaseURL: document.getElementById("dbUrl").value
     };
     localStorage.setItem("iotCfg", JSON.stringify(firebaseConfig));
-    alert("Configuración guardada");
+    alert("Guardado ✔");
     location.reload();
   };
 
-  if (localStorage.getItem("iotCfg")) {
+  if(localStorage.getItem("iotCfg")){
     firebaseConfig = JSON.parse(localStorage.getItem("iotCfg"));
   }
 
@@ -108,28 +152,46 @@
   document.getElementById("btnLabOn").onclick = () => set(ref(db, "casa/laboratorio"), true);
   document.getElementById("btnLabOff").onclick = () => set(ref(db, "casa/laboratorio"), false);
 
-  // GRÁFICO
   const ctx = document.getElementById("estadoChart").getContext("2d");
-  const dataChart = {
-    labels: [],
-    datasets: [{
-      label: "Estado (1=Encendido, 0=Apagado)",
-      data: [],
-      borderWidth: 2,
-    }]
-  };
-  const chart = new Chart(ctx, { type: "line", data: dataChart });
 
-  function agregarDato(estado) {
-    const hora = new Date().toLocaleTimeString();
-    dataChart.labels.push(hora);
-    dataChart.datasets[0].data.push(estado ? 1 : 0);
+  const chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "Sala",
+          borderColor: "#4dffb8",
+          data: [],
+          borderWidth: 3,
+        },
+        {
+          label: "Laboratorio",
+          borderColor: "#ff4d6d",
+          data: [],
+          borderWidth: 3,
+        }
+      ]
+    },
+    options: {
+      plugins: { legend: { labels: { color: "white" } } },
+      scales: {
+        x: { ticks: { color: "white" } },
+        y: { ticks: { color: "white" }, suggestedMin: -0.2, suggestedMax: 1.2 }
+      }
+    }
+  });
+
+  function addPoint(datasetIndex, value){
+    const time = new Date().toLocaleTimeString();
+    chart.data.labels.push(time);
+    chart.data.datasets[datasetIndex].data.push(value ? 1 : 0);
     chart.update();
   }
 
-  // ESCUCHA TIEMPO REAL
-  onValue(ref(db, "casa/sala"), snap => agregarDato(snap.val()));
-
+  onValue(ref(db, "casa/sala"), snap => addPoint(0, snap.val()));
+  onValue(ref(db, "casa/laboratorio"), snap => addPoint(1, snap.val()));
 </script>
+
 </body>
 </html>
